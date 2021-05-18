@@ -9,9 +9,11 @@ tf.disable_v2_behavior()
 
 from sklearn.metrics import confusion_matrix
 from time import time
+import time 
 
 from alexnet import model  
 from data import get_data_set
+
 
 train_x,train_y,tain_l=get_data_set("train")
 test_x,test_y,test_l=get_data_set("test")
@@ -21,7 +23,7 @@ _IMG_SIZE = 32
 _NUM_CHANNELS = 3
 _BATCH_SIZE = 128
 _CLASS_SIZE = 10
-_ITERATION = 20000 # 30000，【RG】迭代改为2w次，3w次跑出来过拟合了，而且跑了快5小时了
+_ITERATION = 100 # 30000，【RG】迭代改为2w次，3w次跑出来过拟合了，而且跑了快5小时了
 _SAVE_PATH = "tensorboard/cifar-10/"  #先创建好这些文件，【RG】没事不用先创建好，他自己会生成
 _SAVE_BOARD_PATH="tensorboard/board/"
 
@@ -52,70 +54,100 @@ sess.run(tf.global_variables_initializer())
 #    sess.run(tf.global_variables_initializer())
 
 def train(num_iterations):
-    for i in range(num_iterations):
-        randidx=np.random.randint(len(train_x),size=_BATCH_SIZE)    #此处返回的是小于冷（train）的离散均匀分布，总共有128个
-        batch_xs=train_x[randidx]
-        batch_ys=train_y[randidx]
+    with open('train.log', 'a+') as fp:
+        for i in range(num_iterations):
+            randidx=np.random.randint(len(train_x),size=_BATCH_SIZE)    #此处返回的是小于冷（train）的离散均匀分布，总共有128个
+            batch_xs=train_x[randidx]
+            batch_ys=train_y[randidx]
 
-        start_time=time()
-        i_global,_=sess.run([global_step,optimizer],feed_dict={x:batch_xs,y:batch_ys})
-        duration=time()-start_time
-
-
-        if(i_global%10==0)or(i==num_iterations-1):
-            _loss,batch_acc=sess.run([loss,accuracy],feed_dict={x:batch_xs,y:batch_ys})
-            msg= "Global Step: {0:>6}, accuracy: {1:>6.1%}, loss = {2:.2f} ({3:.1f} examples/sec, {4:.2f} sec/batch)"
-            print(msg.format(i_global, batch_acc, _loss, _BATCH_SIZE / duration, duration))
-
-            resultmerged=sess.run(merged,feed_dict={x:batch_xs,y:batch_ys})
-            train_writer.add_summary(resultmerged,i_global)
+            # start_time=time()
+            start_time=time.time()
+            i_global,_=sess.run([global_step,optimizer],feed_dict={x:batch_xs,y:batch_ys})
+            # duration=time()-start_time
+            duration=time.time()-start_time
 
 
-        if  (i_global%100==0)or(i==num_iterations-1):
-            
-            acc=predict_test()
+            if(i_global%10==0)or(i==num_iterations-1):
+                _loss,batch_acc=sess.run([loss,accuracy],feed_dict={x:batch_xs,y:batch_ys})
+                msg= "Global Step: {0:>6}, accuracy: {1:>6.1%}, loss = {2:.2f} ({3:.1f} examples/sec, {4:.2f} sec/batch)".format(
+                    i_global, batch_acc, _loss, _BATCH_SIZE / duration, duration
+                )
+                print(msg)
+                # print(msg.format(i_global, batch_acc, _loss, _BATCH_SIZE / duration, duration))
+                fp.write(msg+'\n')
 
-            print('test accuracy is:')
-            print(acc)
-            saver.save(sess,save_path=_SAVE_PATH,global_step=global_step)
-            print("Saved checkpoint")
+                resultmerged=sess.run(merged,feed_dict={x:batch_xs,y:batch_ys})
+                train_writer.add_summary(resultmerged,i_global)
+
+
+            if  (i_global%100==0)or(i==num_iterations-1):
+                
+                acc=predict_test()
+
+                # print('test accuracy is:')
+                # print(acc)
+                saver.save(sess,save_path=_SAVE_PATH,global_step=global_step)
+                msg = 'test accuracy is: {}\n Saved checkpoint'.format(acc)
+                print(msg)
+                # print("Saved checkpoint")
+                fp.write(msg+'\n')
 
 
 def predict_test(show_confusion_matrix=False):
+    with open('train.log', 'a+') as fp:
+    
+        i=0
+        predicted_class=np.zeros(shape=len(test_x),dtype=np.int)#返回一个新的数组，用零填充
+        # print('test_x的长度：')
+        # print(len(test_x))
+        msg = 'test_x的长度：{}'.format(len(test_x))
+        print(msg)
+        fp.write(msg+'\n')
 
-    i=0
-    predicted_class=np.zeros(shape=len(test_x),dtype=np.int)#返回一个新的数组，用零填充
-    print('test_x的长度：')
-    print(len(test_x))
+        while i<len(test_x):
+            j=min(i+_BATCH_SIZE,len(test_x))
+            batch_xs=test_x[i:j,:]
+            #batch_xs是128*3072的大小，最后一个是16*3072
+            batch_ys=test_y[i:j,:]
+            predicted_class[i:j]=sess.run(y_pred_cls,feed_dict={x:batch_xs,y:batch_ys})
+            i=j
 
-    while i<len(test_x):
-        j=min(i+_BATCH_SIZE,len(test_x))
-        batch_xs=test_x[i:j,:]
-        #batch_xs是128*3072的大小，最后一个是16*3072
-        batch_ys=test_y[i:j,:]
-        predicted_class[i:j]=sess.run(y_pred_cls,feed_dict={x:batch_xs,y:batch_ys})
-        i=j
+        correct=(np.argmax(test_y,axis=1)==predicted_class)
+        acc=correct.mean()*100
 
-    correct=(np.argmax(test_y,axis=1)==predicted_class)
-    acc=correct.mean()*100
+        correct_numbers=correct.sum()
 
-    correct_numbers=correct.sum()
+        # print("Accuracy on Test-Set:{0:.2f}%({1}/{2})".format(acc,correct_numbers,len(test_x)))
+        msg = "Accuracy on Test-Set:{0:.2f}%({1}/{2})".format(acc,correct_numbers,len(test_x))
+        print(msg)
+        fp.write(msg+'\n')
 
-    print("Accuracy on Test-Set:{0:.2f}%({1}/{2})".format(acc,correct_numbers,len(test_x)))
 
-    if show_confusion_matrix is True:
-        cm=confusion_matrix(y_true=np.argmax(test_y,axis=1),y_pred=predicted_class)
-        for i in range(_CLASS_SIZE):
-            class_name="({}){}".format(i,test_l[i])
-            print (cm[i:],class_name)
-        class_numbers=["({0})".format(i) for i in range(_CLASS_SIZE)]
-        print("".join(class_numbers))
+        if show_confusion_matrix is True:
+            cm=confusion_matrix(y_true=np.argmax(test_y,axis=1),y_pred=predicted_class)
+            for i in range(_CLASS_SIZE):
+                class_name="({}){}".format(i,test_l[i])
+                # print (cm[i:],class_name)
+                msg = cm[i:] + class_name
+                print(msg)
+                fp.write(msg+'\n')
+
+            class_numbers=["({0})".format(i) for i in range(_CLASS_SIZE)]
+            # print("".join(class_numbers))
+            msg = "".join(class_numbers)
+            fp.write(msg+'\n')
     
     return acc
 
 if _ITERATION!=0:
+    start = time.clock()
     train(_ITERATION)
+    end = time.clock()
 
+msg = 'Total time: {} s'.format(end - start)
+print(msg)
+with open('train.log', 'a+') as fp:
+    fp.write(msg)
 sess.close()
 
 

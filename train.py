@@ -23,7 +23,7 @@ _IMG_SIZE = 32
 _NUM_CHANNELS = 3
 _BATCH_SIZE = 128
 _CLASS_SIZE = 10
-_ITERATION = 100 # 30000，【RG】迭代改为2w次，3w次跑出来过拟合了，而且跑了快5小时了
+_ITERATION = 10000 # 30000，【RG】迭代改为2w次，3w次跑出来过拟合了，而且跑了快5小时了
 _SAVE_PATH = "tensorboard/cifar-10/"  #先创建好这些文件，【RG】没事不用先创建好，他自己会生成
 _SAVE_BOARD_PATH="tensorboard/board/"
 

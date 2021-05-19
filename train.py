@@ -140,9 +140,9 @@ def predict_test(show_confusion_matrix=False):
     return acc
 
 if _ITERATION!=0:
-    start = time.clock()
+    start = time.time()
     train(_ITERATION)
-    end = time.clock()
+    end = time.time()
 
 msg = 'Total time: {} s'.format(end - start)
 print(msg)

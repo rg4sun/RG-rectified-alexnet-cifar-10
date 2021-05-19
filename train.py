@@ -87,7 +87,7 @@ def train(num_iterations):
                 # print('test accuracy is:')
                 # print(acc)
                 saver.save(sess,save_path=_SAVE_PATH,global_step=global_step)
-                msg = 'test accuracy is: {}\n Saved checkpoint'.format(acc)
+                msg = 'test accuracy is: {}\nSaved checkpoint'.format(acc)
                 print(msg)
                 # print("Saved checkpoint")
                 fp.write(msg+'\n')
@@ -100,7 +100,7 @@ def predict_test(show_confusion_matrix=False):
         predicted_class=np.zeros(shape=len(test_x),dtype=np.int)#返回一个新的数组，用零填充
         # print('test_x的长度：')
         # print(len(test_x))
-        msg = 'test_x的长度：{}'.format(len(test_x))
+        msg = '\nthe length of test_x: {}'.format(len(test_x))
         print(msg)
         fp.write(msg+'\n')
 

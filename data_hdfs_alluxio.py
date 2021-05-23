@@ -5,6 +5,7 @@ from urllib.request import urlretrieve
 import tarfile
 import zipfile
 import sys
+
 import alluxio
 from alluxio import option
 
@@ -37,6 +38,15 @@ def maybe_download_and_extract():
 
         os.rename(main_directory+"./cifar-10-batches-py", cifar_10_directory)
         os.remove(zip_cifar_10)
+        # # 【R.G.】这段代码把上面下载的数据集存到alluxio中
+        # 先手动吧，这个到时候再写成代码
+        # ALLUXIO_DATA_PATH = '/data_set/'
+        # client = alluxio.Client('10.89.127.142', 39999)
+        # opt = option.CreateDirectory(recursive=True)
+        # client.create_directory(ALLUXIO_DATA_PATH, opt)
+        # print('Dataset loaded in alluxio !')
+
+
 
 def get_data_set(name="train", cifar=10):
     x = None
@@ -47,16 +57,25 @@ def get_data_set(name="train", cifar=10):
 
     folder_name = "cifar_10" if cifar == 10 else "cifar_100"
 
-    f = open('./data_set/'+folder_name+'/batches.meta', 'rb')
-    datadict = pickle.load(f, encoding='latin1')
-    f.close()
+    # f = open('./data_set/'+folder_name+'/batches.meta', 'rb')
+    # datadict = pickle.load(f, encoding='latin1')
+    # f.close()
+
+    # 【R.G.】改成用alluxio打开文件
+    client = alluxio.Client('10.89.127.142', 39999)
+    with client.open('/data_set/'+folder_name+'/batches.meta', 'rb') as fp:
+        datadict = pickle.load(fp, encoding='latin1')
+
     l = datadict['label_names']
 
     if name is "train":
         for i in range(5):
-            f = open('./data_set/'+folder_name+'/data_batch_' + str(i + 1), 'rb')
-            datadict = pickle.load(f, encoding='latin1')  #提取数据
-            f.close()
+            # f = open('./data_set/'+folder_name+'/data_batch_' + str(i + 1), 'rb')
+            # datadict = pickle.load(f, encoding='latin1')  #提取数据
+            # f.close()
+
+            with client.open('/data_set/'+folder_name+'/data_batch_' + str(i + 1), 'rb') as fp:
+                datadict = pickle.load(fp, encoding='latin1') #提取数据
 
             _X = datadict["data"]
             _Y = datadict['labels']
@@ -85,9 +104,12 @@ def get_data_set(name="train", cifar=10):
 #            print(np.shape(y))
 
     elif name is "test":
-        f = open('./data_set/'+folder_name+'/test_batch', 'rb')
-        datadict = pickle.load(f, encoding='latin1')
-        f.close()
+        # f = open('./data_set/'+folder_name+'/test_batch', 'rb')
+        # datadict = pickle.load(f, encoding='latin1')
+        # f.close()
+
+        with client.open('/data_set/'+folder_name+'/test_batch', 'rb') as fp:
+            datadict = pickle.load(fp, encoding='latin1')
 
         x = datadict["data"]
         y = np.array(datadict['labels'])

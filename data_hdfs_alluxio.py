@@ -63,7 +63,7 @@ def get_data_set(name="train", cifar=10):
 
     # 【R.G.】改成用alluxio打开文件
     client = alluxio.Client('10.89.127.142', 39999)
-    with client.open('/data_set/'+folder_name+'/batches.meta', 'rb') as fp:
+    with client.open('/data_set/'+folder_name+'/batches.meta', 'r') as fp:
         datadict = pickle.load(fp, encoding='latin1')
 
     l = datadict['label_names']
@@ -74,7 +74,7 @@ def get_data_set(name="train", cifar=10):
             # datadict = pickle.load(f, encoding='latin1')  #提取数据
             # f.close()
 
-            with client.open('/data_set/'+folder_name+'/data_batch_' + str(i + 1), 'rb') as fp:
+            with client.open('/data_set/'+folder_name+'/data_batch_' + str(i + 1), 'r') as fp:
                 datadict = pickle.load(fp, encoding='latin1') #提取数据
 
             _X = datadict["data"]
@@ -108,7 +108,7 @@ def get_data_set(name="train", cifar=10):
         # datadict = pickle.load(f, encoding='latin1')
         # f.close()
 
-        with client.open('/data_set/'+folder_name+'/test_batch', 'rb') as fp:
+        with client.open('/data_set/'+folder_name+'/test_batch', 'r') as fp:
             datadict = pickle.load(fp, encoding='latin1')
 
         x = datadict["data"]

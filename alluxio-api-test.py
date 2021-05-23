@@ -17,7 +17,7 @@ green = colorize('32')
 
 
 def info(s):
-    print green(s)
+    print(green(s))
 
 
 def pretty_json(obj):
@@ -46,7 +46,7 @@ def main():
 
     info("getting status of %s" % py_test)
     stat = client.get_status(py_test)
-    print pretty_json(stat.json())
+    print( pretty_json(stat.json()))
     info("done")
 
     info("renaming %s to %s" % (py_test, py_test_renamed))
@@ -55,18 +55,18 @@ def main():
 
     info("getting status of %s" % py_test_renamed)
     stat = client.get_status(py_test_renamed)
-    print pretty_json(stat.json())
+    print( pretty_json(stat.json()))
     info("done")
 
     info("reading %s" % py_test_renamed)
     with client.open(py_test_renamed, 'r') as f:
-        print f.read()
+        print(f.read())
     info("done")
 
     info("listing status of paths under /")
     root_stats = client.list_status('/')
     for stat in root_stats:
-        print pretty_json(stat.json())
+        print( pretty_json(stat.json()))
     info("done")
 
     info("deleting %s" % py_test_root_dir)

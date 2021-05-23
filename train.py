@@ -24,8 +24,8 @@ _NUM_CHANNELS = 3
 _BATCH_SIZE = 128
 _CLASS_SIZE = 10
 _ITERATION = 10000 # 30000，【RG】迭代改为1w次，3w次跑出来过拟合了，而且跑了快5小时了
-_SAVE_PATH = "tensorboard-hdfs-alluxio/cifar-10/"  #先创建好这些文件，【RG】没事不用先创建好，他自己会生成
-_SAVE_BOARD_PATH="tensorboard-hdfs-alluxio/board/"
+_SAVE_PATH = "tensorboard/cifar-10/"  #先创建好这些文件，【RG】没事不用先创建好，他自己会生成
+_SAVE_BOARD_PATH="tensorboard/board/"
 
 loss=tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=output,labels=y))
 optimizer=tf.train.RMSPropOptimizer(learning_rate=1e-3).minimize(loss,global_step=global_step)
@@ -54,7 +54,7 @@ sess.run(tf.global_variables_initializer())
 #    sess.run(tf.global_variables_initializer())
 
 def train(num_iterations):
-    with open('train-hdfs-alluxio.log', 'a+') as fp:
+    with open('train.log', 'a+') as fp:
         for i in range(num_iterations):
             randidx=np.random.randint(len(train_x),size=_BATCH_SIZE)    #此处返回的是小于冷（train）的离散均匀分布，总共有128个
             batch_xs=train_x[randidx]
@@ -94,7 +94,7 @@ def train(num_iterations):
 
 
 def predict_test(show_confusion_matrix=False):
-    with open('train-hdfs-alluxio.log', 'a+') as fp:
+    with open('train.log', 'a+') as fp:
     
         i=0
         predicted_class=np.zeros(shape=len(test_x),dtype=np.int)#返回一个新的数组，用零填充
@@ -146,7 +146,7 @@ if _ITERATION!=0:
 
 msg = 'Total time: {} s'.format(end - start)
 print(msg)
-with open('train-hdfs-alluxio.log', 'a+') as fp:
+with open('train.log', 'a+') as fp:
     fp.write(msg)
 sess.close()
 

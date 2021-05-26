@@ -106,5 +106,11 @@ def get_data_set(name="train", cifar=10):
     return x, dense_to_one_hot(y), l
 
 
-get_data_set(name="train")
+# get_data_set(name="train")
+
+train_x,train_y,tain_l=get_data_set("train")
+test_x,test_y,test_l=get_data_set("test")
+
+for i in range(10):
+    pass
 

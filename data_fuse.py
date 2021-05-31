@@ -41,11 +41,12 @@ def get_data_set(name="train", cifar=10):
     y = None
     l = None
 
-    maybe_download_and_extract()
+    # maybe_download_and_extract() 
+    # 注释掉这个下载行为，提前下载好上传至alluxio，然后通过alluxio挂载到 /mnt/fuse/data_set
 
     folder_name = "cifar_10" if cifar == 10 else "cifar_100"
 
-    f = open('./data_set/'+folder_name+'/batches.meta', 'rb')
+    f = open('/mnt/fuse/data_set/'+folder_name+'/batches.meta', 'rb')
     datadict = pickle.load(f, encoding='latin1')
     f.close()
     l = datadict['label_names']

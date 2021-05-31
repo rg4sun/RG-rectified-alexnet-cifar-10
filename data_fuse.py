@@ -53,7 +53,7 @@ def get_data_set(name="train", cifar=10):
 
     if name is "train":
         for i in range(5):
-            f = open('./data_set/'+folder_name+'/data_batch_' + str(i + 1), 'rb')
+            f = open('/mnt/fuse/data_set/'+folder_name+'/data_batch_' + str(i + 1), 'rb')
             datadict = pickle.load(f, encoding='latin1')  #提取数据
             f.close()
 
@@ -84,7 +84,7 @@ def get_data_set(name="train", cifar=10):
 #            print(np.shape(y))
 
     elif name is "test":
-        f = open('./data_set/'+folder_name+'/test_batch', 'rb')
+        f = open('/mnt/fuse/data_set/'+folder_name+'/test_batch', 'rb')
         datadict = pickle.load(f, encoding='latin1')
         f.close()
 
